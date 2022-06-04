@@ -19,7 +19,7 @@ public class ServerService {
     private Selector selector;
     private ByteBuffer buffer;
     private Path files;
-    private Path path = Paths.get("D:\\Notepad++\\readme.txt");
+    private Path path = Path.of(System.getProperty("user.home"));
     public ServerService() throws IOException {
         server = ServerSocketChannel.open();
         selector = Selector.open();
@@ -82,6 +82,24 @@ public class ServerService {
             List<String> list = Files.readAllLines(path);
             for (String str : list) {
                 channel.write(ByteBuffer.wrap((str + "\n").getBytes(StandardCharsets.UTF_8)));
+            }
+        }
+        if (command.startsWith("cd")) {
+            String[] strings = command.split(" +");
+            if (strings.length == 2) {
+                String directory = strings[1];
+                Path goTo = path.resolve(directory);
+                if (Files.exists(goTo)) {
+                    if (Files.isDirectory(goTo)) {
+                        path = goTo;
+                        String ent = "$";
+                        channel.write(ByteBuffer.wrap(ent.getBytes(StandardCharsets.UTF_8)));
+                    }
+                    else {
+                        String ent = "Директории не существует";
+                        channel.write(ByteBuffer.wrap(ent.getBytes(StandardCharsets.UTF_8)));
+                    }
+                }
             }
         }
         sb.append("$");
